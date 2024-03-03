@@ -1,0 +1,17 @@
+# SPDX-License-Identifier: GPL-2.0-only
+
+config ARM_GEM5_DEVFREQ
+	tristate "Arm gem5 DEVFREQ Driver"
+	depends on CLK_GEM5_ENERGY_CTRL
+	select PM_OPP
+	help
+	  This adds the DEVFREQ driver for gem5 platform ClockDomains
+	  that are not CPU clusters.
+
+config ARM_GEM5_DEVFREQ_DDRFREQ
+	tristate "Arm gem5 DEVFREQ Driver"
+	depends on ARM_GEM5_DEVFREQ
+	select DEVFREQ_GOV_USERSPACE
+	help
+	  This adds the DEVFREQ driver for gem5 platform ClockDomain
+	  that is connected with DDR system.

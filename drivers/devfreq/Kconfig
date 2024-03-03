@@ -151,6 +151,8 @@ config ARM_SUN8I_A33_MBUS_DEVFREQ
 	  This adds the DEVFREQ driver for the MBUS controller in some
 	  Allwinner sun8i (A33 through H3) and sun50i (A64 and H5) SoCs.
 
+source "drivers/devfreq/gem5/Kconfig"
+
 source "drivers/devfreq/event/Kconfig"
 
 endif # PM_DEVFREQ

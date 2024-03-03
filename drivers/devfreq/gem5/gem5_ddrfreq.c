@@ -47,8 +47,8 @@ static struct gem5_devfreq_domain_data ddrfreq_domain = {
 
 static const struct of_device_id ddrfreq_of_match[] = {
         {
-                .compatible = "gem5-clock-domain,id400",
-                .data       = &ddrfreq_data
+                .compatible     = "gem5-clock-domain,id400",
+                .data           = &ddrfreq_data
         }
 };
 MODULE_DEVICE_TABLE(of, ddrfreq_of_match);

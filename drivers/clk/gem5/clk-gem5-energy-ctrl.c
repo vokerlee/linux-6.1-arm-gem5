@@ -439,7 +439,7 @@ static void __init gem5_clk_of_register_energy_ctrl(struct device_node *ectrl_no
 		base_data.domain_index = domain_index;
 		base_data.baseaddr = baseaddr;
 
-		snprintf(name, sizeof(name), "clk-gem5-domain.%d", domain_id);
+		snprintf(name, sizeof(name), "clk-gem5-domain.%x", domain_id);
 
 		clk = clk_register_energy_ctrl(name, &base_data);
 		if (IS_ERR_OR_NULL(clk)) {

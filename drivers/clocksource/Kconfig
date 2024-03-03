@@ -562,7 +562,7 @@ config CLKSRC_VERSATILE
 	bool "ARM Versatile (Express) reference platforms clock source" if COMPILE_TEST
 	depends on GENERIC_SCHED_CLOCK
 	select TIMER_OF
-	default y if (ARCH_VEXPRESS || ARCH_VERSATILE) && ARM
+	default y if (ARCH_VEXPRESS || ARCH_VERSATILE) && (ARM || ARM64)
 	help
 	  This option enables clock source based on free running
 	  counter available in the "System Registers" block of

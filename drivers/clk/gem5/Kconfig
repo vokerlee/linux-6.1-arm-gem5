@@ -1,0 +1,7 @@
+# SPDX-License-Identifier: GPL-2.0
+
+config CLK_GEM5_ENERGY_CTRL
+	bool "Clock driver for GEM5 Platform (cpufreq & devfreq purposes)"
+	help
+	  Enable clk hardware for cpufreq and devfreq driver
+	  in gem5 platforms.

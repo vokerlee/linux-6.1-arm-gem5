@@ -30,7 +30,6 @@
 #include <linux/export.h>
 #include <linux/mutex.h>
 #include <linux/of_platform.h>
-#include <linux/pm_opp.h>
 #include <linux/slab.h>
 #include <linux/topology.h>
 #include <linux/types.h>
@@ -68,36 +67,8 @@ static inline int cpu_to_cluster(int cpu)
  * When calling this function, all clocks are already initialized */
 static int gem5_init_cpu_opp_table(struct device *cpu_dev)
 {
-	int i = -1, count, cpu_cluster = cpu_to_cluster(cpu_dev->id);
-	u32 *freq_table;
-	u32 *volt_table; /* In micro volts */
-	int ret;
-
-	count = clk_energy_ctrl_get_opp_table(clk[cpu_cluster], &freq_table, &volt_table);
-
-	if (!freq_table || !count) {
-		pr_err("%s: clock \"%s\" returned invalid freq table",
-			__func__, __clk_get_name(clk[cpu_cluster]));
-		return -EINVAL;
-	}
-
-	if (!volt_table || !count) {
-		pr_err("%s: clock \"%s\" returned invalid voltage table",
-			__func__, __clk_get_name(clk[cpu_cluster]));
-		return -EINVAL;
-	}
-
-	while (++i < count) {
-		ret = dev_pm_opp_add(cpu_dev, freq_table[i] * 1000, volt_table[i]);
-		if (ret) {
-			dev_warn(cpu_dev,
-				"%s: Failed to add OPP freq %d, u-voltage %d, err: %d\n",
-				 __func__, freq_table[i] * 1000, volt_table[i], ret);
-			return ret;
-		}
-	}
-
-	return 0;
+	int cpu_cluster = cpu_to_cluster(cpu_dev->id);
+	return clk_energy_ctrl_fill_opp_table(clk[cpu_cluster], cpu_dev);
 }
 
 /* When calling this function, all clocks are already initialized */
@@ -208,7 +179,7 @@ static int _get_cluster_clk_and_freq_table(struct device *cpu_dev)
 	clk[cpu_cluster] = clk_get_sys(name, NULL);
 	if (IS_ERR_OR_NULL(clk[cpu_cluster])) {
 		ret = PTR_ERR(clk[cpu_cluster]);
-		dev_err(cpu_dev, "%s: cannot find clock \"%s\" for cpu%d, err: %d\n",
+		dev_err(cpu_dev, "%s: cannot find clock '%s' for cpu%d, err: %d\n",
 			__func__, name, cpu_dev->id, ret);
 		goto atomic_dec;
 	}

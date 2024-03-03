@@ -27,6 +27,7 @@
 #include <linux/io.h>
 #include <linux/of.h>
 #include <linux/of_address.h>
+#include <linux/pm_opp.h>
 #include <linux/slab.h>
 #include <linux/spinlock.h>
 #include <linux/types.h>
@@ -116,13 +117,13 @@ static unsigned long clk_energy_ctrl_recalc_rate(struct clk_hw *hw,
 	int perf;
 
 	if (!clk_energy_ctrl_initialized(clk_ectrl)) {
-		pr_err("%s: clock \"%s\" is not initialized\n",
+		pr_err("%s: clock '%s' is not initialized\n",
 			__func__, clk_hw_get_name(hw));
 		return -EIO;
 	}
 
 	if (!clk_ectrl->data.opp.freqs) {
-		pr_err("%s: not populated clock \"%s\" frequencies\n",
+		pr_err("%s: not populated clock '%s' frequencies\n",
 			__func__, clk_hw_get_name(hw));
 		return -EIO;
 	}
@@ -154,13 +155,13 @@ static int clk_energy_ctrl_set_rate(struct clk_hw *hw, unsigned long rate,
 	int ret;
 
 	if (!clk_energy_ctrl_initialized(clk_ectrl)) {
-		pr_err("%s: clock \"%s\" is not initialized\n",
+		pr_err("%s: clock '%s' is not initialized\n",
 			__func__, clk_hw_get_name(hw));
 		return -EIO;
 	}
 
 	if (!clk_ectrl->data.opp.freqs) {
-		pr_err("%s: not populated clock \"%s\" frequencies\n",
+		pr_err("%s: not populated clock '%s' frequencies\n",
 			__func__, clk_hw_get_name(hw));
 		return -EIO;
 	}
@@ -293,6 +294,40 @@ u32 clk_energy_ctrl_get_trans_latency(struct clk *clk)
 }
 EXPORT_SYMBOL_GPL(clk_energy_ctrl_get_trans_latency);
 
+int clk_energy_ctrl_fill_opp_table(struct clk *clk, struct device *dev)
+{
+	int i = -1, count;
+	u32 *freq_table;
+	u32 *volt_table; /* In micro volts */
+	int ret;
+
+	count = clk_energy_ctrl_get_opp_table(clk, &freq_table, &volt_table);
+
+	if (!freq_table || !count) {
+		pr_err("%s: clock '%s' returned invalid freq table",
+			__func__, __clk_get_name(clk));
+		return -EINVAL;
+	}
+
+	if (!volt_table || !count) {
+		pr_err("%s: clock '%s' returned invalid voltage table",
+			__func__, __clk_get_name(clk));
+		return -EINVAL;
+	}
+
+	while (++i < count) {
+		ret = dev_pm_opp_add(dev, freq_table[i] * 1000, volt_table[i]);
+		if (ret) {
+			dev_warn(dev, "%s: failed to add OPP freq %d, u-voltage %d, err: %d\n",
+				 __func__, freq_table[i] * 1000, volt_table[i], ret);
+			return ret;
+		}
+	}
+
+	return 0;
+}
+EXPORT_SYMBOL_GPL(clk_energy_ctrl_fill_opp_table);
+
 struct clk *clk_register_energy_ctrl(const char *name,
 				struct clk_energy_ctrl_base_data *base_data)
 {
@@ -309,7 +344,7 @@ struct clk *clk_register_energy_ctrl(const char *name,
 
 	clk_ectrl = kzalloc(sizeof(*clk_ectrl), GFP_KERNEL);
 	if (!clk_ectrl) {
-		pr_err("%s: out of memory for \"%s\" clock allocation\n",
+		pr_err("%s: out of memory for '%s' clock allocation\n",
 			__func__, name);
 		return ERR_PTR(-ENOMEM);
 	}
@@ -339,14 +374,14 @@ struct clk *clk_register_energy_ctrl(const char *name,
 
 	clk = clk_register(NULL, &clk_ectrl->hw);
 	if (IS_ERR_OR_NULL(clk)) {
-		pr_err("%s: failed to register clock \"%s\"\n", __func__, name);
+		pr_err("%s: failed to register clock '%s'\n", __func__, name);
 		goto err_free;
 	}
 
 	return clk;
 
 err_free:
-	pr_err("%s: clock registration of \"%s\" clock failed\n",
+	pr_err("%s: clock registration of '%s' clock failed\n",
 		__func__, name);
 	kfree(clk_ectrl);
 
@@ -373,7 +408,7 @@ static void __init gem5_clk_of_register_energy_ctrl(struct device_node *ectrl_no
 
 	baseaddr = of_iomap(ectrl_node, 0);
 	if (!baseaddr) {
-		pr_err("error on of_iomap() with \"%s\" device node\n",
+		pr_err("error on of_iomap() with '%s' device node\n",
 			ectrl_node->name);
 		return;
 	}
@@ -414,7 +449,7 @@ static void __init gem5_clk_of_register_energy_ctrl(struct device_node *ectrl_no
 
 		clk_register_clkdev(clk, NULL, name);
 
-		pr_info("clock \"%s\" is successfully initialized\n", name);
+		pr_info("clock '%s' is successfully initialized\n", name);
 	}
 }
 CLK_OF_DECLARE(energy_ctrl, "arm,gem5-energy-ctrl", gem5_clk_of_register_energy_ctrl);

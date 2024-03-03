@@ -23,10 +23,17 @@
 
 #if defined(CONFIG_CLK_GEM5_ENERGY_CTRL)
 
+int clk_energy_ctrl_fill_opp_table(struct clk *clk, struct device *dev);
 int clk_energy_ctrl_get_opp_table(struct clk *clk, u32 **freq_table, u32 **volt_table);
 u32 clk_energy_ctrl_get_trans_latency(struct clk *clk);
 
 #else
+
+static inline
+int clk_energy_ctrl_fill_opp_table(struct clk *clk, struct device *dev);
+{
+        return -EOPNOTSUPP;
+}
 
 static inline
 int clk_energy_ctrl_get_opp_table(struct clk *clk, u32 **freq_table, u32 **volt_table)

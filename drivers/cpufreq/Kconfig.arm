@@ -357,3 +357,10 @@ config ARM_PXA2xx_CPUFREQ
 	  This add the CPUFreq driver support for Intel PXA2xx SOCs.
 
 	  If in doubt, say N.
+
+config ARM_GEM5_CPUFREQ
+	tristate "Gem5 multi-cluster CPUfreq driver"
+	depends on CLK_GEM5_ENERGY_CTRL
+	select PM_OPP
+	help
+	  This add the CPUFreq driver support for gem5 platform simulation.

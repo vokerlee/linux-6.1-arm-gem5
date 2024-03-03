@@ -2902,7 +2902,8 @@ CONFIG_CLKSRC_VERSATILE=y
 # end of Xilinx SoC drivers
 # end of SOC (System On Chip) specific Drivers
 
-# CONFIG_PM_DEVFREQ is not set
+CONFIG_PM_DEVFREQ=y
+
 # CONFIG_EXTCON is not set
 # CONFIG_MEMORY is not set
 # CONFIG_IIO is not set

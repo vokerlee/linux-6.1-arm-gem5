@@ -5270,6 +5270,15 @@ u64 perf_event_read_value(struct perf_event *event, u64 *enabled, u64 *running)
 }
 EXPORT_SYMBOL_GPL(perf_event_read_value);
 
+u64 perf_event_read_value_local(struct perf_event *event)
+{
+	if (event->state == PERF_EVENT_STATE_ACTIVE)
+		event->pmu->read(event);
+
+	return local64_read(&event->count);
+}
+EXPORT_SYMBOL_GPL(perf_event_read_value_local);
+
 static int __perf_read_group_add(struct perf_event *leader,
 					u64 read_format, u64 *values)
 {
@@ -12678,10 +12687,11 @@ err_fd:
  * @context: context data could be used in overflow_handler callback
  */
 struct perf_event *
-perf_event_create_kernel_counter(struct perf_event_attr *attr, int cpu,
-				 struct task_struct *task,
-				 perf_overflow_handler_t overflow_handler,
-				 void *context)
+__perf_event_create_kernel_counter(struct perf_event_attr *attr, int cpu,
+				   struct task_struct *task,
+				   struct perf_event *group_leader,
+				   perf_overflow_handler_t overflow_handler,
+				   void *context)
 {
 	struct perf_event_context *ctx;
 	struct perf_event *event;
@@ -12694,7 +12704,7 @@ perf_event_create_kernel_counter(struct perf_event_attr *attr, int cpu,
 	if (attr->aux_output)
 		return ERR_PTR(-EINVAL);
 
-	event = perf_event_alloc(attr, cpu, task, NULL, NULL,
+	event = perf_event_alloc(attr, cpu, task, group_leader, NULL,
 				 overflow_handler, context, -1);
 	if (IS_ERR(event)) {
 		err = PTR_ERR(event);
@@ -12755,7 +12765,27 @@ err_free:
 err:
 	return ERR_PTR(err);
 }
+
+struct perf_event *
+perf_event_create_kernel_counter(struct perf_event_attr *attr, int cpu,
+				 struct task_struct *task,
+				 perf_overflow_handler_t overflow_handler,
+				 void *context)
+{
+	return __perf_event_create_kernel_counter(attr, cpu, task, NULL, overflow_handler, context);
+}
 EXPORT_SYMBOL_GPL(perf_event_create_kernel_counter);
+
+struct perf_event *
+perf_event_create_kernel_group_counter(struct perf_event_attr *attr, int cpu,
+				       struct task_struct *task,
+				       struct perf_event *group_leader,
+				       perf_overflow_handler_t overflow_handler,
+				       void *context)
+{
+	return __perf_event_create_kernel_counter(attr, cpu, task, group_leader, overflow_handler, context);
+}
+EXPORT_SYMBOL_GPL(perf_event_create_kernel_group_counter);
 
 void perf_pmu_migrate_context(struct pmu *pmu, int src_cpu, int dst_cpu)
 {

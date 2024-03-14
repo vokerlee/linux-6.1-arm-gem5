@@ -1025,13 +1025,19 @@ perf_event_create_kernel_counter(struct perf_event_attr *attr,
 				struct task_struct *task,
 				perf_overflow_handler_t callback,
 				void *context);
+extern struct perf_event *
+perf_event_create_kernel_group_counter(struct perf_event_attr *attr, int cpu,
+				       struct task_struct *task,
+				       struct perf_event *group_leader,
+				       perf_overflow_handler_t overflow_handler,
+				       void *context);
 extern void perf_pmu_migrate_context(struct pmu *pmu,
 				int src_cpu, int dst_cpu);
 int perf_event_read_local(struct perf_event *event, u64 *value,
 			  u64 *enabled, u64 *running);
 extern u64 perf_event_read_value(struct perf_event *event,
 				 u64 *enabled, u64 *running);
-
+extern u64 perf_event_read_value_local(struct perf_event *event);
 
 struct perf_sample_data {
 	/*

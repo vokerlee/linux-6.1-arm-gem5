@@ -97,6 +97,7 @@
 #include <linux/scs.h>
 #include <linux/io_uring.h>
 #include <linux/bpf.h>
+#include <linux/permut.h>
 
 #include <asm/pgalloc.h>
 #include <linux/uaccess.h>
@@ -842,6 +843,9 @@ void __put_task_struct(struct task_struct *tsk)
 	delayacct_tsk_free(tsk);
 	put_signal_struct(tsk->signal);
 	sched_core_free(tsk);
+#ifdef CONFIG_PERMUT
+	permut_free(tsk);
+#endif
 	free_task(tsk);
 }
 EXPORT_SYMBOL_GPL(__put_task_struct);
@@ -2262,6 +2266,11 @@ static __latent_entropy struct task_struct *copy_process(
 	retval = copy_thread(p, args);
 	if (retval)
 		goto bad_fork_cleanup_io;
+#ifdef CONFIG_PERMUT
+	retval = permut_fork(p);
+	if (retval)
+		goto bad_fork_cleanup_permut;
+#endif
 
 	stackleak_task_init(p);
 
@@ -2507,6 +2516,10 @@ bad_fork_free_pid:
 		free_pid(pid);
 bad_fork_cleanup_thread:
 	exit_thread(p);
+#ifdef CONFIG_PERMUT
+bad_fork_cleanup_permut:
+	permut_free(p);
+#endif
 bad_fork_cleanup_io:
 	if (p->io_context)
 		exit_io_context(p);

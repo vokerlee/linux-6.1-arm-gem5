@@ -252,6 +252,10 @@ extern int no_unaligned_warning;
 
 extern struct ctl_table sysctl_mount_point[];
 
+#ifdef CONFIG_PERMUT
+extern struct ctl_table permut_table[];
+#endif
+
 #else /* CONFIG_SYSCTL */
 
 #define DECLARE_SYSCTL_BASE(_name, _table)

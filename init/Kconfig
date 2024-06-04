@@ -1880,6 +1880,15 @@ config DEBUG_PERF_USE_VMALLOC
 
 	  Say N if unsure.
 
+config PERMUT
+	default n
+	default y if ARM64
+	bool "Performance monitoring unit tracking"
+	depends on PERF_EVENTS
+	depends on PROC_SYSCTL
+	help
+	  Is used for frequencies governors & scheduler optimizations
+
 endmenu
 
 config SYSTEM_DATA_VERIFICATION

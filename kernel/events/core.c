@@ -55,7 +55,10 @@
 #include <linux/pgtable.h>
 #include <linux/buildid.h>
 #include <linux/task_work.h>
+#include <linux/permut.h>
+#include <linux/sched/cputime.h>
 
+#include "../sched/sched.h"
 #include "internal.h"
 
 #include <asm/irq_regs.h>
@@ -4176,6 +4179,7 @@ static bool perf_rotate_context(struct perf_cpu_context *cpuctx)
 	struct perf_event *cpu_event = NULL, *task_event = NULL;
 	struct perf_event_context *task_ctx = NULL;
 	int cpu_rotate, task_rotate;
+	int cpu;
 
 	/*
 	 * Since we run this from IRQ context, nobody can install new
@@ -4191,6 +4195,9 @@ static bool perf_rotate_context(struct perf_cpu_context *cpuctx)
 
 	perf_ctx_lock(cpuctx, cpuctx->task_ctx);
 	perf_pmu_disable(cpuctx->ctx.pmu);
+
+	cpu = smp_processor_id();
+	permut_account_task(cpu_rq(cpu)->curr, cpu_rq(cpu)->curr, cpu, PERMUT_CONTEXT_ROTATE);
 
 	if (task_rotate)
 		task_event = ctx_event_to_rotate(task_ctx);

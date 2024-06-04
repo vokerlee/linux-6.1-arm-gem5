@@ -64,6 +64,7 @@
 #include <linux/vtime.h>
 #include <linux/wait_api.h>
 #include <linux/workqueue_api.h>
+#include <linux/permut.h>
 
 #ifdef CONFIG_PREEMPT_DYNAMIC
 # ifdef CONFIG_GENERIC_ENTRY
@@ -5201,6 +5202,8 @@ context_switch(struct rq *rq, struct task_struct *prev,
 		}
 	}
 
+	permut_account_task(prev, next, cpu_of(rq), PERMUT_TASK_SWITCH);
+
 	rq->clock_update_flags &= ~(RQCF_ACT_SKIP|RQCF_REQ_SKIP);
 
 	prepare_lock_switch(rq, next, rf);
@@ -5482,6 +5485,8 @@ void scheduler_tick(void)
 		resched_latency = cpu_resched_latency(rq);
 	calc_global_load_tick(rq);
 	sched_core_tick(rq);
+
+	permut_account_task(curr, curr, cpu, PERMUT_TASK_TICK);
 
 	rq_unlock(rq, &rf);
 

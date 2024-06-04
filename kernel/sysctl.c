@@ -2062,6 +2062,13 @@ static struct ctl_table kern_table[] = {
 		.extra2		= SYSCTL_ONE_THOUSAND,
 	},
 #endif
+#ifdef CONFIG_PERMUT
+	{
+		.procname	= "permut",
+		.mode		= 0555,
+		.child		= permut_table,
+	},
+#endif
 	{
 		.procname	= "panic_on_warn",
 		.data		= &panic_on_warn,

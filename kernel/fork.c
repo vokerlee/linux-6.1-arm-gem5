@@ -98,6 +98,7 @@
 #include <linux/io_uring.h>
 #include <linux/bpf.h>
 #include <linux/permut.h>
+#include <linux/macfm.h>
 
 #include <asm/pgalloc.h>
 #include <linux/uaccess.h>
@@ -845,6 +846,9 @@ void __put_task_struct(struct task_struct *tsk)
 	sched_core_free(tsk);
 #ifdef CONFIG_PERMUT
 	permut_free(tsk);
+#endif
+#ifdef CONFIG_MACFM
+	macfm_free(tsk);
 #endif
 	free_task(tsk);
 }
@@ -2271,6 +2275,11 @@ static __latent_entropy struct task_struct *copy_process(
 	if (retval)
 		goto bad_fork_cleanup_permut;
 #endif
+#ifdef CONFIG_MACFM
+	retval = macfm_fork(p);
+	if (retval)
+		goto bad_fork_cleanup_macfm;
+#endif
 
 	stackleak_task_init(p);
 
@@ -2516,6 +2525,10 @@ bad_fork_free_pid:
 		free_pid(pid);
 bad_fork_cleanup_thread:
 	exit_thread(p);
+#ifdef CONFIG_MACFM
+bad_fork_cleanup_macfm:
+	macfm_free(p);
+#endif
 #ifdef CONFIG_PERMUT
 bad_fork_cleanup_permut:
 	permut_free(p);

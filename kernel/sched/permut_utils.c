@@ -100,3 +100,16 @@ void permut_assign_pinned_events(struct permut_pinned_events *term_l,
 	for_each_permut_pinned_event(index, event_ids)
 		term_l->data[index] = term_r->data[index];
 }
+
+u64 permut_pinned_data_of_event(struct permut_pinned_events *data, int cpu, int event_id)
+{
+	int *event_ids = permut_get_pinned_event_ids();
+	int index;
+
+	for_each_permut_pinned_event(index, event_ids) {
+		if (event_id == event_ids[index])
+			return data->data[index];
+	}
+
+	return 0;
+}

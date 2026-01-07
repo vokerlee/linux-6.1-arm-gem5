@@ -1528,6 +1528,10 @@ struct task_struct {
 	union rv_task_monitor		rv[RV_PER_TASK_MONITORS];
 #endif
 
+#ifdef CONFIG_MACFM
+	struct macfm_info		*macfm_info;
+#endif
+
 #ifdef CONFIG_PERMUT
 	struct permut_info		*permut_info;
 #endif

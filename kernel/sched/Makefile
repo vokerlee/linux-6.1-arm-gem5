@@ -34,3 +34,4 @@ obj-y += build_policy.o
 obj-y += build_utility.o
 
 obj-$(CONFIG_PERMUT) += permut_perf.o permut_sysctl.o permut_tracking.o permut_utils.o
+obj-$(CONFIG_MACFM) += macfm.o macfm_sysctl.o macfm_cpufreq.o

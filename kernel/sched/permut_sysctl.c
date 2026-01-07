@@ -33,10 +33,10 @@ unsigned int sysctl_permut_exclude_idle = 0;
 unsigned int sysctl_permut_exclude_kernel = 1;
 
 int sysctl_permut_pinned_events[NR_PERMUT_PINNED_EVENTS] = {
-	0x08,
-	0x11,
-	0x17,
-	0x2A,
+	ARMV8_PMUV3_PERFCTR_INST_RETIRED,
+	ARMV8_PMUV3_PERFCTR_CPU_CYCLES,
+	ARMV8_PMUV3_PERFCTR_L2D_CACHE_REFILL,
+	ARMV8_PMUV3_PERFCTR_L3D_CACHE_REFILL,
 	PERMUT_EVENT_FINAL_TERM
 };
 int sysctl_permut_flex_events[NR_PERMUT_FLEX_EVENTS] = {

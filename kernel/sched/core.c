@@ -6,6 +6,7 @@
  *
  *  Copyright (C) 1991-2002  Linus Torvalds
  */
+#include "linux/sched.h"
 #include <linux/highmem.h>
 #include <linux/hrtimer_api.h>
 #include <linux/ktime_api.h>
@@ -65,6 +66,7 @@
 #include <linux/wait_api.h>
 #include <linux/workqueue_api.h>
 #include <linux/permut.h>
+#include <linux/macfm.h>
 
 #ifdef CONFIG_PREEMPT_DYNAMIC
 # ifdef CONFIG_GENERIC_ENTRY
@@ -3124,6 +3126,7 @@ void set_task_cpu(struct task_struct *p, unsigned int new_cpu)
 		p->se.nr_migrations++;
 		rseq_migrate(p);
 		perf_event_task_migrate(p);
+		macfm_migrate_update(p, new_cpu);
 	}
 
 	__set_task_cpu(p, new_cpu);
@@ -5046,6 +5049,7 @@ prepare_task_switch(struct rq *rq, struct task_struct *prev,
 static struct rq *finish_task_switch(struct task_struct *prev)
 	__releases(rq->lock)
 {
+	bool from_idle = is_idle_task(prev);
 	struct rq *rq = this_rq();
 	struct mm_struct *mm = rq->prev_mm;
 	unsigned int prev_state;
@@ -5122,6 +5126,9 @@ static struct rq *finish_task_switch(struct task_struct *prev)
 
 		put_task_struct_rcu_user(prev);
 	}
+
+	if (from_idle)
+		macfm_first_running_task_update(current);
 
 	return rq;
 }
@@ -5487,6 +5494,7 @@ void scheduler_tick(void)
 	sched_core_tick(rq);
 
 	permut_account_task(curr, curr, cpu, PERMUT_TASK_TICK);
+	macfm_tick_update(curr, cpu);
 
 	rq_unlock(rq, &rf);
 
@@ -9708,6 +9716,11 @@ void __init sched_init(void)
 		init_cfs_rq(&rq->cfs);
 		init_rt_rq(&rq->rt);
 		init_dl_rq(&rq->dl);
+
+#ifdef CONFIG_MACFM
+		init_macfm_info(&rq->macfm_info);
+#endif /* CONFIG_MACFM */
+
 #ifdef CONFIG_FAIR_GROUP_SCHED
 		INIT_LIST_HEAD(&rq->leaf_cfs_rq_list);
 		rq->tmp_alone_branch = &rq->leaf_cfs_rq_list;

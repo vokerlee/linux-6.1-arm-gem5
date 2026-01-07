@@ -68,6 +68,8 @@
 #include <linux/wait_api.h>
 #include <linux/wait_bit.h>
 #include <linux/workqueue_api.h>
+#include <linux/sched/cputime.h>
+#include <linux/macfm.h>
 
 #include <trace/events/power.h>
 #include <trace/events/sched.h>
@@ -1149,6 +1151,10 @@ struct rq {
 	unsigned int		core_forceidle_seq;
 	unsigned int		core_forceidle_occupation;
 	u64			core_forceidle_start;
+#endif
+
+#ifdef CONFIG_MACFM
+	struct macfm_info macfm_info;
 #endif
 };
 

@@ -1889,6 +1889,12 @@ config PERMUT
 	help
 	  Is used for frequencies governors & scheduler optimizations
 
+config MACFM
+	default n
+	bool "Memory Aware CPU Frequency Manager"
+	depends on PERMUT
+	help
+	  Enables memory-aware CPU frequency governor
 endmenu
 
 config SYSTEM_DATA_VERIFICATION

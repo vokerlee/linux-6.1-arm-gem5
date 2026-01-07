@@ -131,12 +131,13 @@ void permut_account_task(struct task_struct *prev_task, struct task_struct *next
 
 	prev = permut_read_prev(cpu);
 	curr = permut_read_curr(cpu);
-	permut_calc_events_delta(prev, curr, &delta);
+	permut_calc_events_delta(curr, prev, &delta);
 	*prev = *curr;
 
 	memset(&next_delta, 0, sizeof(next_delta));
 
 	/* Account here all other things */
+	permut_account_macfm(prev_task, next_task, cpu, &delta, flags);
 
 	if (prev_task == next_task) {
 		/* usually triggered by sched_tick() */

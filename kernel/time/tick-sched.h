@@ -84,6 +84,7 @@ struct tick_sched {
 };
 
 extern struct tick_sched *tick_get_tick_sched(int cpu);
+ktime_t tick_init_jiffy_update(void);
 
 extern void tick_setup_sched_timer(void);
 #if defined CONFIG_NO_HZ_COMMON || defined CONFIG_HIGH_RES_TIMERS

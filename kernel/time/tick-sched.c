@@ -154,7 +154,8 @@ static void tick_do_update_jiffies64(ktime_t now)
 /*
  * Initialize and return retrieve the jiffies update.
  */
-static ktime_t tick_init_jiffy_update(void)
+
+ktime_t tick_init_jiffy_update(void)
 {
 	ktime_t period;
 

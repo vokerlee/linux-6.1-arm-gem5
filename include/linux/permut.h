@@ -28,6 +28,7 @@
 #define PERMUT_TASK_TICK		1 << 1
 #define PERMUT_PREV_MODE		1 << 2
 #define PERMUT_CONTEXT_ROTATE           1 << 3
+#define PERMUT_PERF_CHANGE		1 << 4
 
 #define PERMUT_SCALE_VALUE		1024
 
@@ -108,6 +109,7 @@ void permut_read_cpu_events(int cpu, u64 *pinned_data, u64 *flex_data);
 u64 permut_read_cpu_flex_event(int cpu, int event_id);
 u64 permut_read_cpu_pinned_event(int cpu, int event_id);
 u64 permut_read_cpu_counter(int cpu, int index, int pinned);
+u64 permut_pinned_data_of_event(struct permut_pinned_events *data, int cpu, int event_id);
 
 int *permut_get_pinned_event_ids(void);
 int *permut_get_flex_event_ids(void);
@@ -151,6 +153,21 @@ static inline void permut_release(void)
 	cpumask_and(&online_permut_cpumask, &sysctl_permut_cpumask, cpu_online_mask);
 	permut_perf_release(&online_permut_cpumask);
 }
+
+int set_permut_state(bool enabled, const struct cpumask *new_mask);
+
+#ifdef CONFIG_MACFM
+void permut_account_macfm(struct task_struct *prev_task, struct task_struct *next_task,
+			  int cpu, struct permut_event_count *delta,
+			  unsigned long flags);
+#else
+static inline void permut_account_macfm(struct task_struct *prev_task,
+					struct task_struct *next_task,
+					int cpu, struct permut_event_count *delta,
+					unsigned long flags)
+{
+}
+#endif /* CONFIG_MACFM */
 
 #else
 
